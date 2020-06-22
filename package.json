@@ -1,0 +1,9 @@
+{
+  "name": "userhub",
+  "version": "0.0.1",
+  "description": "基于微信公众号的用户认证服务",
+  "dependencies": {
+    "express": "^4.15.2",
+    "socket.io": "^2.3.0"
+  }
+}
