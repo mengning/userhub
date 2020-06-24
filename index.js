@@ -3,12 +3,14 @@ var http = require('http').createServer(app);
 var io = require('socket.io')(http, {
     path: '/myownpath'
 });
+var wechatscan = require('./wechatscan');
 
 app.get('/', (req, res) => {
-    //res.send('<h1>Hello world</h1>');
-    res.sendFile(__dirname + '/index.html');
+    res.send('<h1>Hello world</h1>');
+    //res.sendFile(__dirname + '/index.html');
 });
 
+wechatscan.start(app);
 
 io.on('connection', (socket) => {
     console.log(socket.id);
@@ -22,6 +24,6 @@ io.on('connection', (socket) => {
 });
 
 
-http.listen(3000, () => {
-    console.log('listening on *:3000');
+http.listen(80, () => {
+    console.log('listening on *:80');
 });
