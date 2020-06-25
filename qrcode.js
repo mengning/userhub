@@ -1,10 +1,12 @@
-var wechatapi = require("./wechatapi")
-
+var wechatapi = require("./wechatapi");
+//临时二维码过期时间，单位秒。最大不超过1800
+var expireNumber = 60;
 const qrcode = {}
 // 生成一个临时二维码
 qrcode.createTmpQRCode = async function (req, res, next) {
     try {
-        result = await wechatapi.createTmpQRCode(100001, 60);
+        var id = Math.floor(Math.random()*900000) + 100000;
+        result = await wechatapi.createTmpQRCode(id, expireNumber);
         var ticket = result['ticket']
         var url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + ticket
 
