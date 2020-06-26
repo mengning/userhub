@@ -1,4 +1,5 @@
 const wechat = require('wechat');
+var scanList = require('./userhub').scanQRCodes;
 
 const wechatscan = {};
 wechatscan.message = async function (req, res, next) {
@@ -14,6 +15,9 @@ wechatscan.message = async function (req, res, next) {
     }
     if (message.MsgType === 'event' && message.Event === 'SCAN') {
         scanCode = message.EventKey;
+    }
+    if(scanCode){
+        scanList.push({'scanCode':scanCode, 'FromUserName':message.FromUserName});
     }
     res.reply({ content: 'wellcome! ' + scanCode, type: 'text' });
 }
