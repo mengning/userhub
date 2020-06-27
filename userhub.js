@@ -13,7 +13,7 @@ function scanQRCodeHandle(socket, id) {
             console.log(userhub.scanQRCodes[0].scanCode, id);
             socket.emit('userverify', userhub.scanQRCodes[0].FromUserName, (data) => {
                 console.log(data); 
-            })
+            });
             userhub.scanQRCodes.pop();
         }
     }
@@ -36,13 +36,34 @@ userhub.createTmpQRCode = async function (socket) {
             if(monitorInterval){    
                 clearInterval(monitorInterval); 
                 monitorInterval = null; 
-            } 
+            }
+            socket.emit('userverify', "qrcode timeout", (data) => {
+                console.log(data); 
+            });
         }, expireNumber * 1000);
 
         return true;
     } catch (err) {
         console.error(err)
         return false
+    }
+}
+// 扫码事件一个临时二维码
+userhub.scanTmpQRCode = async function (message) {
+    var scanCode = '';
+    console.log(message);
+    if (message.Event === 'subscribe') {
+        var key = message.EventKey
+        if (key.indexOf("qrscene_") !== -1) {
+            var start = key.indexOf('qrscene_') + ('qrscene_'.length);
+            scanCode = key.substring(start);
+        }
+    }
+    if (message.MsgType === 'event' && message.Event === 'SCAN') {
+        scanCode = message.EventKey;
+    }
+    if(scanCode && parseInt(scanCode, 10) > 100000){
+        userhub.scanQRCodes.push({'scanCode':scanCode, 'FromUserName':message.FromUserName});
     }
 }
 userhub.start = function (http) {
