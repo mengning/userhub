@@ -1,4 +1,6 @@
-var wechatapi = require("./wechatapi");
+var config = require("./wechatapi");
+var WechatAPI = require('co-wechat-api');
+const wechatapi = new WechatAPI(config.appid, config.appsecret);
 //临时二维码过期时间，单位秒。最大不超过1800
 var expireNumber = 60;
 const qrcode = {}

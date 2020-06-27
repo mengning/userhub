@@ -1,3 +1,24 @@
+function whatBrowser() {
+    var ua = window.navigator.userAgent.toLowerCase();
+    var ua = navigator.userAgent.toLowerCase();  //获取用户端信息
+    var info = {
+        ie: /msie/.test(ua) && !/opera/.test(ua),  //匹配IE浏览器
+        op: /opera/.test(ua),  //匹配Opera浏览器
+        sa: /version.*safari/.test(ua),  //匹配Safari浏览器
+        ch: /chrome/.test(ua),  //匹配Chrome浏览器
+        ff: /gecko/.test(ua) && !/webkit/.test(ua)  //匹配Firefox浏览器
+    };
+    if (ua.match(/MicroMessenger/i) == 'micromessenger') {
+        return "weixin";
+    }
+    if (info.ie) return "IE";
+    if (info.op) return "Opera";
+    if (info.sa) return "Safari";
+    if (info.ch) return "Chrome";
+    if (info.ff) return "Firefox";
+    return "Unknow";
+}
+
 function show()  //显示隐藏层和弹出层
 {
     var hideobj = document.getElementById("hidebg");
@@ -10,11 +31,31 @@ function hide()  //去除隐藏层和弹出层
     document.getElementById("hidebg").style.display = "none";
     document.getElementById("hidebox").style.display = "none";
 }
-function qrcodeTimeout(){
-    document.getElementById("info").innerHTML = 
-    '<p onclick="window.location.reload()">二维码超时，请刷新页面重试！</p>';
+
+function qrcodeTimeout() {
+    document.getElementById("info").innerHTML =
+        '<p onclick="window.location.reload()">二维码超时，请刷新页面重试！</p>';
 }
-function userport(url){
+function getQueryString(name) {
+    var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+    var r = window.location.search.substr(1).match(reg);
+    if (r != null) return unescape(r[2]);
+    return null;
+}
+function userport(url) {
+
+    var browser = whatBrowser();
+    var wxcode = null;
+    document.getElementById("browser").innerHTML = window.location.href;
+    if(browser == "weixin"){
+        //获取微信code
+        wxcode = getQueryString('code');
+        if(wxcode == null){
+            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx21d8c47fbc68af9d&redirect_uri=http%3A%2F%2Fapiacb.natappfree.cc&response_type=code&scope=snsapi_base&state=123#wechat_redirect'; 
+        }
+    }
+    //document.getElementById("browser").innerHTML = browser + code;
+
     const socket = io(url, {
         path: '/userhub',
         transports: ['websocket', 'polling']
@@ -25,9 +66,15 @@ function userport(url){
     });
     socket.on('server', (data, fn) => {
         console.log(data);
+        if(wxcode){
+            socket.emit('wxcode', wxcode, (data) => {
+                show(); 
+                console.log(data);
+            });
+        } 
         document.getElementById("qrcode").src = data;
         show();
-        setTimeout('qrcodeTimeout()', 60*1000);
+        setTimeout('qrcodeTimeout()', 60 * 1000);
         fn('callback a server function');
     });
     socket.on('userverify', (data, fn) => {
@@ -36,9 +83,5 @@ function userport(url){
         document.getElementById("info").innerHTML = 'welcome ' + data.nickname;
         setTimeout('hide()', 2000);
         fn('callback userverify');
-    });
-
-    socket.emit('client', 'data to server', (data) => {
-        console.log(data); 
     });
 }

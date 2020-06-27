@@ -1,4 +1,4 @@
-var WechatAPI = require('co-wechat-api');
+
 var config = {
     //token是你申请测试公众号时候填写的token
     token: 'wechat',
@@ -7,5 +7,4 @@ var config = {
     appsecret: '862a9bc190a639c59236973c49c76df7'
 };
 
-const wechatapi = new WechatAPI(config.appid, config.appsecret);
-module.exports = wechatapi;
+module.exports = config;

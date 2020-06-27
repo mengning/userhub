@@ -30,4 +30,4 @@ node index.js
 ```
 # Licensing
 
-under [GNU GPL v3](/LICENSE) or contact mengning997[AT]163.com
+under [GNU GPL v3](/LICENSE) or 企业版请联系mengning997[AT]163.com
