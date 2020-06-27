@@ -6,12 +6,14 @@ var expireNumber = 60;
 var io = '';
 const userhub = {}
 userhub.scanQRCodes = [];
-function scanQRCodeHandle(socket, id) {
+scanQRCodeHandle = async function (socket, id) {
     if(userhub.scanQRCodes[0]){
         console.log(userhub.scanQRCodes[0]);
         if(userhub.scanQRCodes[0].scanCode == id){
             console.log(userhub.scanQRCodes[0].scanCode, id);
-            socket.emit('userverify', userhub.scanQRCodes[0].FromUserName, (data) => {
+            var userInfo = await wechatapi.getUser(userhub.scanQRCodes[0].FromUserName); 
+            console.log(userInfo);
+            socket.emit('userverify', userInfo, (data) => {
                 console.log(data); 
             });
             userhub.scanQRCodes.pop();
@@ -32,14 +34,11 @@ userhub.createTmpQRCode = async function (socket) {
         
         var monitorInterval = setInterval(scanQRCodeHandle,
             expireNumber/expireNumber * 1000, socket, id);
-        setInterval(()=>{
+        setTimeout(()=>{
             if(monitorInterval){    
                 clearInterval(monitorInterval); 
                 monitorInterval = null; 
             }
-            socket.emit('userverify', "qrcode timeout", (data) => {
-                console.log(data); 
-            });
         }, expireNumber * 1000);
 
         return true;
@@ -68,7 +67,7 @@ userhub.scanTmpQRCode = async function (message) {
 }
 userhub.start = function (http) {
     io = socketio(http, {
-        path: '/myownpath'
+        path: '/userhub'
     });
     io.on('connection', (socket) => {
         console.log(socket.id);

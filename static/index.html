@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+
+<head>
+    <title>userhub Demo</title>
+    <script src="userhub/socket.io.js"></script>
+    <script src="userport.js"></script>
+    <script>
+        userport('http://localhost');
+    </script>
+    <link href="userport.css" rel="stylesheet" type="text/css"/>
+</head>
+
+<body>
+    <h1>Hello world</h1>
+    <div id="hidebg"></div>
+    <div id="hidebox">
+        <img id="qrcode" src=''></img>
+        <p id="info">扫码验证</p>
+    </div>
+</body>
+
+</html>

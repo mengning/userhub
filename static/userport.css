@@ -1,0 +1,32 @@
+#hidebg {
+    position: absolute;
+    left: 0px;
+    top: 0px;
+    background-color: #000;
+    width: 100%;
+    /*宽度设置为100%，这样才能使隐藏背景层覆盖原页面*/
+    filter: alpha(opacity=60);
+    /*设置透明度为60%*/
+    opacity: 0.6;
+    /*非IE浏览器下设置透明度为60%*/
+    display: none;
+    z-Index: 2;
+}
+
+#hidebox {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    top: 200px;
+    left: 30%;
+    background-color: #fff;
+    display: none;
+    cursor: pointer;
+    z-Index: 3;
+}
+
+#content {
+    text-align: center;
+    cursor: pointer;
+    z-Index: 1;
+}
