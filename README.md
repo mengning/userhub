@@ -1,5 +1,5 @@
 # userhub
-基于微信公众号的用户认证服务
+基于微信公众号的用户认证服务插件，可用于桌面Web、桌面软件等场景的二维码扫码验证用户，及微信浏览器自动验证用户。
 
 ## client userport.js
 
@@ -7,7 +7,7 @@
     <script src="userhub/socket.io.js"></script>
     <script src="userport.js"></script>
     <script>
-        userport('http://localhost');
+        userport('http://your-userhub-server');
     </script>
     <link href="userport.css" rel="stylesheet" type="text/css"/>
 ```

@@ -46,7 +46,6 @@ function userport(url) {
 
     var browser = whatBrowser();
     var wxcode = null;
-    document.getElementById("browser").innerHTML = window.location.href;
     if(browser == "weixin"){
         //获取微信code
         wxcode = getQueryString('code');
@@ -54,7 +53,7 @@ function userport(url) {
             window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx21d8c47fbc68af9d&redirect_uri=http%3A%2F%2Fapiacb.natappfree.cc&response_type=code&scope=snsapi_base&state=123#wechat_redirect'; 
         }
     }
-    //document.getElementById("browser").innerHTML = browser + code;
+    document.getElementById("browser").innerHTML = browser;
 
     const socket = io(url, {
         path: '/userhub',
