@@ -15,7 +15,7 @@ app.get('/qrcode', (req, res) => {
     qrcode.createTmpQRCode(req, res);
 })
 wechatscan.start(app);
-userhub.start(http, config);
+userhub.start(app, http, config);
 app.use(express.static(path.join(__dirname, 'static')));
 http.listen(80, () => {
     console.log('listening on *:80');

@@ -2,22 +2,26 @@ const wechat = require('wechat');
 var WechatAPI = require('co-wechat-api');
 var socketio = require('socket.io');
 const https = require('https');
+const session = require("express-session")({
+    secret: "my-secret",
+    resave: true,
+    saveUninitialized: true
+});
+const sharedsession = require("express-socket.io-session");
 //临时二维码过期时间，单位秒。最大不超过1800
 var expireNumber = 60;
 var io = '';
 const userhub = {}
 userhub.scanQRCodes = [];
 userhub.wechatapi = '';
-scanQRCodeHandle = async function (socket, id) {
+userhub.scanQRCodeHandle = async function (socket, id) {
     if (userhub.scanQRCodes[0]) {
         console.log(userhub.scanQRCodes[0]);
         if (userhub.scanQRCodes[0].scanCode == id) {
             console.log(userhub.scanQRCodes[0].scanCode, id);
-            var userInfo = await userhub.wechatapi.getUser(userhub.scanQRCodes[0].FromUserName);
-            console.log(userInfo);
-            socket.emit('userverify', userInfo, (data) => {
-                console.log(data);
-            });
+            var userdata = await userhub.wechatapi.getUser(userhub.scanQRCodes[0].FromUserName);
+            console.log(userdata);
+            socket.emit('loging', userdata);
             userhub.scanQRCodes.pop();
         }
     }
@@ -30,11 +34,11 @@ userhub.createTmpQRCode = async function (socket) {
         var ticket = result['ticket']
         var url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + ticket
 
-        socket.emit('server', url, (data) => {
+        socket.emit('qrcode', url, (data) => {
             console.log(data);
         });
 
-        var monitorInterval = setInterval(scanQRCodeHandle,
+        var monitorInterval = setInterval(userhub.scanQRCodeHandle,
             expireNumber / expireNumber * 1000, socket, id);
         setTimeout(() => {
             if (monitorInterval) {
@@ -67,14 +71,27 @@ userhub.scanTmpQRCode = async function (message) {
         userhub.scanQRCodes.push({ 'scanCode': scanCode, 'FromUserName': message.FromUserName });
     }
 }
-userhub.start = function (http, config) {
+userhub.start = function (app, http, config) {
+    // weixin api
     userhub.wechatapi = new WechatAPI(config.appid, config.appsecret);
+    // websocket
     io = socketio(http, {
-        path: '/'+config.username
+        path: '/' + config.username
     });
+    // Attach session
+    app.use(session);
+    // Share session with io sockets
+    io.use(sharedsession(session));
+
     io.on('connection', (socket) => {
         console.log(socket.id);
-        socket.on('wxcode', (data, fn) => {
+/*         store.get(socket.handshake.session.id, (error, session)=>{
+            if(session){
+                socket.emit('loging', session.userdata); 
+            }
+        }); */
+        // when weixin browser login
+        socket.on('wxcode', (data) => {
             console.log(data);
             var url = 'https://api.weixin.qq.com/sns/oauth2/access_token?appid=' + config.appid + '&secret=' + config.appsecret + '&code=' + data + '&grant_type=authorization_code'
             https.get(url, (res) => {
@@ -85,10 +102,20 @@ userhub.start = function (http, config) {
                     let b = JSON.parse('' + d);//将buffer转成JSON
                     console.log(b.openid);
                     userhub.scanQRCodes.push({ 'scanCode': "100001", 'FromUserName': b.openid });
-                    scanQRCodeHandle(socket, "100001");
+                    userhub.scanQRCodeHandle(socket, "100001");
                 });
             });
-            fn('callback a client function');
+        });
+        // Accept a login event with user's data
+        socket.on("login", function (userdata) {
+            socket.handshake.session.userdata = userdata;
+            socket.handshake.session.save();
+        });
+        socket.on("logout", function (userdata) {
+            if (socket.handshake.session.userdata) {
+                delete socket.handshake.session.userdata;
+                socket.handshake.session.save();
+            }
         });
         userhub.createTmpQRCode(socket);
     });

@@ -50,7 +50,7 @@ function userport(url, username) {
         //获取微信code
         wxcode = getQueryString('code');
         if(wxcode == null){
-            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx21d8c47fbc68af9d&redirect_uri=http%3A%2F%2Fapiacb.natappfree.cc&response_type=code&scope=snsapi_base&state=123#wechat_redirect'; 
+            window.location.href = 'https://open.weixin.qq.com/connect/oauth2/authorize?appid=wx21d8c47fbc68af9d&redirect_uri='+window.location.href+'&response_type=code&scope=snsapi_base&state=123#wechat_redirect'; 
         }
     }
     document.getElementById("browser").innerHTML = browser;
@@ -63,24 +63,24 @@ function userport(url, username) {
     socket.on('connect', () => {
         console.log(socket.id); // 'G5p5...'
     });
-    socket.on('server', (data, fn) => {
+    socket.on('qrcode', (data) => {
         console.log(data);
         if(wxcode){
             socket.emit('wxcode', wxcode, (data) => {
                 show(); 
                 console.log(data);
             });
-        } 
-        document.getElementById("qrcode").src = data;
-        show();
-        setTimeout('qrcodeTimeout()', 60 * 1000);
-        fn('callback a server function');
+        }else{
+            document.getElementById("qrcode").src = data;
+            show();
+            setTimeout('qrcodeTimeout()', 60 * 1000);
+        }
     });
-    socket.on('userverify', (data, fn) => {
+    socket.on('loging', (data) => {
         console.log(data);
+        socket.emit('login', data);
         document.getElementById("qrcode").src = data.headimgurl;
         document.getElementById("info").innerHTML = 'welcome ' + data.nickname;
         setTimeout('hide()', 2000);
-        fn('callback userverify');
     });
 }
