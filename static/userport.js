@@ -42,7 +42,7 @@ function getQueryString(name) {
     if (r != null) return unescape(r[2]);
     return null;
 }
-function userport(url) {
+function userport(url, username) {
 
     var browser = whatBrowser();
     var wxcode = null;
@@ -56,7 +56,7 @@ function userport(url) {
     document.getElementById("browser").innerHTML = browser;
 
     const socket = io(url, {
-        path: '/userhub',
+        path: '/'+username,
         transports: ['websocket', 'polling']
     });
 

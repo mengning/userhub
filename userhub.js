@@ -1,7 +1,5 @@
-var config = require("./wechatapi");
 const wechat = require('wechat');
 var WechatAPI = require('co-wechat-api');
-const wechatapi = new WechatAPI(config.appid, config.appsecret);
 var socketio = require('socket.io');
 const https = require('https');
 //临时二维码过期时间，单位秒。最大不超过1800
@@ -9,12 +7,13 @@ var expireNumber = 60;
 var io = '';
 const userhub = {}
 userhub.scanQRCodes = [];
+userhub.wechatapi = '';
 scanQRCodeHandle = async function (socket, id) {
     if (userhub.scanQRCodes[0]) {
         console.log(userhub.scanQRCodes[0]);
         if (userhub.scanQRCodes[0].scanCode == id) {
             console.log(userhub.scanQRCodes[0].scanCode, id);
-            var userInfo = await wechatapi.getUser(userhub.scanQRCodes[0].FromUserName);
+            var userInfo = await userhub.wechatapi.getUser(userhub.scanQRCodes[0].FromUserName);
             console.log(userInfo);
             socket.emit('userverify', userInfo, (data) => {
                 console.log(data);
@@ -27,7 +26,7 @@ scanQRCodeHandle = async function (socket, id) {
 userhub.createTmpQRCode = async function (socket) {
     try {
         var id = Math.floor(Math.random() * 900000) + 100000;
-        result = await wechatapi.createTmpQRCode(id, expireNumber);
+        result = await userhub.wechatapi.createTmpQRCode(id, expireNumber);
         var ticket = result['ticket']
         var url = 'https://mp.weixin.qq.com/cgi-bin/showqrcode?ticket=' + ticket
 
@@ -68,9 +67,10 @@ userhub.scanTmpQRCode = async function (message) {
         userhub.scanQRCodes.push({ 'scanCode': scanCode, 'FromUserName': message.FromUserName });
     }
 }
-userhub.start = function (http) {
+userhub.start = function (http, config) {
+    userhub.wechatapi = new WechatAPI(config.appid, config.appsecret);
     io = socketio(http, {
-        path: '/userhub'
+        path: '/'+config.username
     });
     io.on('connection', (socket) => {
         console.log(socket.id);
