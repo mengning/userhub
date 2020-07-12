@@ -12,12 +12,13 @@
     <div id="hidebg"></div>
     <div id="hidebox">
         <img id="qrcode" src=''></img>
-        <p id="info">扫码关注公众号进行身份验证</p>
+        <p id="info"></p>
     </div>
 </body>
 <script src="userhub/socket.io.js"></script>
 <script src="userport.js"></script>
 <script>
-    userport('http://by47k6.natappfree.cc', 'userhub');
+    userport.connect('http://eq7b8h.natappfree.cc', 'userhub');
+    //setTimeout(userport.close(), 60000);
 </script>
 </html>

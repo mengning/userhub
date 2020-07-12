@@ -21,7 +21,9 @@ userhub.scanQRCodeHandle = async function (socket, id) {
             console.log(userhub.scanQRCodes[0].scanCode, id);
             var userdata = await userhub.wechatapi.getUser(userhub.scanQRCodes[0].FromUserName);
             console.log(userdata);
-            socket.emit('loging', userdata);
+            socket.emit('login', userdata);
+            socket.handshake.session.userdata = userdata;
+            socket.handshake.session.save()
             userhub.scanQRCodes.pop();
         }
     }
@@ -84,12 +86,11 @@ userhub.start = function (app, http, config) {
     io.use(sharedsession(session));
 
     io.on('connection', (socket) => {
-        console.log(socket.id);
-/*         store.get(socket.handshake.session.id, (error, session)=>{
-            if(session){
-                socket.emit('loging', session.userdata); 
-            }
-        }); */
+        if(socket.handshake.session.userdata){
+            socket.emit('login', socket.handshake.session.userdata);
+        }else{
+            userhub.createTmpQRCode(socket);
+        }
         // when weixin browser login
         socket.on('wxcode', (data) => {
             console.log(data);
@@ -106,18 +107,14 @@ userhub.start = function (app, http, config) {
                 });
             });
         });
-        // Accept a login event with user's data
-        socket.on("login", function (userdata) {
-            socket.handshake.session.userdata = userdata;
-            socket.handshake.session.save();
-        });
         socket.on("logout", function (userdata) {
+            console.log(userdata);
             if (socket.handshake.session.userdata) {
                 delete socket.handshake.session.userdata;
                 socket.handshake.session.save();
             }
         });
-        userhub.createTmpQRCode(socket);
+
     });
 }
 module.exports = userhub

@@ -42,7 +42,8 @@ function getQueryString(name) {
     if (r != null) return unescape(r[2]);
     return null;
 }
-function userport(url, username) {
+const userport = {};
+userport.connect = function (url, username) {
 
     var browser = whatBrowser();
     var wxcode = null;
@@ -59,6 +60,7 @@ function userport(url, username) {
         path: '/'+username,
         transports: ['websocket', 'polling']
     });
+    userport.socket = socket;
 
     socket.on('connect', () => {
         console.log(socket.id); // 'G5p5...'
@@ -72,15 +74,20 @@ function userport(url, username) {
             });
         }else{
             document.getElementById("qrcode").src = data;
+            document.getElementById("info").innerHTML = '扫码关注公众号进行身份验证';
             show();
             setTimeout('qrcodeTimeout()', 60 * 1000);
         }
     });
-    socket.on('loging', (data) => {
+    socket.on('login', (data) => {
         console.log(data);
-        socket.emit('login', data);
+        userport.userdata = data;
         document.getElementById("qrcode").src = data.headimgurl;
         document.getElementById("info").innerHTML = 'welcome ' + data.nickname;
+        show();
         setTimeout('hide()', 2000);
     });
+}
+userport.close = function () {
+    userport.socket.emit('logout', userport.userdata); 
 }
